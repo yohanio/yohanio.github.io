@@ -229,16 +229,9 @@ textarea {
   src: local('☺'), url('fonts/Fixedsys500c.woff') format('woff'), url('fonts/Fixedsys500c.ttf') format('truetype'), url('fonts/Fixedsys500c.svg') format('svg');
 }
 
-@font-face {
-  font-family: 'DungGeunMo';
-  font-style: normal;
-  font-weight: normal;
-  src: url('fonts/DungGeunMo.ttf') format('truetype');
-}
-
 body {
   margin: 0;
-  font-family: DungGeunMo, DOS, Monaco, Menlo, Consolas, "Courier New", monospace;
+  font-family: DOS, Monaco, Menlo, Consolas, "Courier New", monospace;
   font-size: 18px;
   line-height: 20px;
   color: #bbbbbb;

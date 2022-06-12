@@ -8,7 +8,7 @@
  * Designed and built with all the love in the world @twitter by @mdo and @fat.
  */
 
-.clearfix {
+ .clearfix {
   *zoom: 1;
 }
 
@@ -225,8 +225,8 @@ textarea {
   font-family: 'DOS';
   font-style: normal;
   font-weight: normal;
-  src: url('fonts/Fixedsys500c.eot');
-  src: local('☺'), url('fonts/Fixedsys500c.woff') format('woff'), url('fonts/Fixedsys500c.ttf') format('truetype'), url('fonts/Fixedsys500c.svg') format('svg');
+  src: url('fonts/DungGeunMo.eot');
+  src: local('☺'), url('fonts/DungGeunMo.woff') format('woff'), url('fonts/DungGeunMo.ttf') format('truetype');
 }
 
 body {
@@ -645,14 +645,6 @@ a:focus {
   clear: both;
 }
 
-img {
-  -webkit-filter: contrast(800%);
-     -moz-filter: contrast(1000%);
-      -ms-filter: contrast(800%);
-       -o-filter: contrast(800%);
-          filter: contrast(1000%);
-}
-
 p {
   margin: 0 0 20px;
 }
@@ -1045,7 +1037,7 @@ pre {
   word-wrap: break-word;
   white-space: pre;
   white-space: pre-wrap;
-  background-color: #000000;
+  background-color: #2f2f2f;
   border: 0;
   -webkit-border-radius: 0;
      -moz-border-radius: 0;
@@ -1058,7 +1050,7 @@ pre.prettyprint {
 
 pre code {
   padding: 0;
-  color: inherit;
+  color: #3bec3b;
   white-space: pre;
   white-space: pre-wrap;
   background-color: transparent;

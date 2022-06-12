@@ -5,6 +5,16 @@
     <link>https://yohanio.github.io/categories/</link>
     <description>Recent content in Categories on $_yOHan</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en</language><atom:link href="https://yohanio.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <language>en</language>
+    <lastBuildDate>Sat, 11 Jun 2022 21:53:37 +0900</lastBuildDate><atom:link href="https://yohanio.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>정보마당</title>
+      <link>https://yohanio.github.io/categories/%EC%A0%95%EB%B3%B4%EB%A7%88%EB%8B%B9/</link>
+      <pubDate>Sat, 11 Jun 2022 21:53:37 +0900</pubDate>
+      
+      <guid>https://yohanio.github.io/categories/%EC%A0%95%EB%B3%B4%EB%A7%88%EB%8B%B9/</guid>
+      <description></description>
+    </item>
+    
   </channel>
 </rss>

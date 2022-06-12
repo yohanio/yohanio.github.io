@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>$_yOHan</title>
-    <link>https://yohanio.github.io/</link>
-    <description>Recent content on $_yOHan</description>
+    <title>Posts on $_yOHan</title>
+    <link>https://yohanio.github.io/posts/</link>
+    <description>Recent content in Posts on $_yOHan</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 11 Jun 2022 21:53:37 +0900</lastBuildDate><atom:link href="https://yohanio.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 11 Jun 2022 21:53:37 +0900</lastBuildDate><atom:link href="https://yohanio.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>코틀린의 동시성</title>
       <link>https://yohanio.github.io/posts/kotlin-coroutine/</link>

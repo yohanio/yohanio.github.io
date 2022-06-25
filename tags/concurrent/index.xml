@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>concurrent on $_yOHan</title>
+    <link>https://yohanio.github.io/tags/concurrent/</link>
+    <description>Recent content in concurrent on $_yOHan</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 12 Jun 2022 10:40:27 +0900</lastBuildDate><atom:link href="https://yohanio.github.io/tags/concurrent/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>병행 컴퓨팅을 위한 Actor model</title>
+      <link>https://yohanio.github.io/posts/actor-model/</link>
+      <pubDate>Sun, 12 Jun 2022 10:40:27 +0900</pubDate>
+      
+      <guid>https://yohanio.github.io/posts/actor-model/</guid>
+      <description>Actor model Actor model(이하 액터 모델)은 가변 상태를 스레드 안전하게 공유하는 방법으로, 상태에 접근할 수 있는 스레드를 하나로 제한 및 내부에 감춰 자신만이 관리할 수 있고, 다른 스레드는 상태 변경이 필요한 경우 해당 스레드에게 메세지를 보내 요청하게 된다.
+락을 소유한 스레드의 작업이 끝나기 전 까지 다른 스레드는 대기해야 한다. 우선순위가 낮은 프로세스의 경우 기아 현상(Starvation)이 발생할 수 있다. 락을 소유한 스레드가 반환되지 않고 종료된 경우 데드락(Dead lock)이 발생한다. 액터 모델을 사용하게 되면 동시성 프로그래밍에서 상태 변경을 안전하게 제어하는 방법 중 하나인 락(Lock) 기반의 동기화와 관련한 여러 가지 문제로부터 자유로워질 수 있다.</description>
+    </item>
+    
+  </channel>
+</rss>

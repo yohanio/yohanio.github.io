@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <title>$_yOHan</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#000084" />
+    <meta property="og:title" content="병행 컴퓨팅을 위한 Actor model - Sun, Jun 12, 2022">
+    <meta property="og:description" content="">
+    <meta property="og:image" content="https://yohanio.github.io/img/hugo-og.png">
+    <link rel="icon" href="https://yohanio.github.io/favicon.ico">
+    <link rel="canonical" href="https://yohanio.github.io">
+    
+    
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse"></button>
+            <a class="brand" href="https://yohanio.github.io">$_yOHan</a>
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    
+                    
+                        
+                            <li>
+                                <a href="/about/">
+                                    
+                                    <span>About</span>
+                                </a>
+                            </li>
+                        
+                    
+                        
+                            <li>
+                                <a href="/post/">
+                                    
+                                    <span>All posts</span>
+                                </a>
+                            </li>
+                        
+                    
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav><div id="content" class="container">
+
+<div class="row-fluid navmargin">
+    <div class="page-header">
+        <h1>병행 컴퓨팅을 위한 Actor model - Sun, Jun 12, 2022</h1>
+    </div>
+    <p class="lead"></p>
+    <h1 id="actor-model">Actor model</h1>
+<p>Actor model(이하 액터 모델)은 가변 상태를 스레드 안전하게 공유하는 방법으로, 상태에 접근할 수 있는 스레드를 하나로 제한 및 내부에 감춰 자신만이 관리할 수 있고, 다른 스레드는 상태 변경이 필요한 경우 해당 스레드에게 메세지를 보내 요청하게 된다.</p>
+<blockquote>
+<ol>
+<li>락을 소유한 스레드의 작업이 끝나기 전 까지 다른 스레드는 대기해야 한다.</li>
+<li>우선순위가 낮은 프로세스의 경우 기아 현상(Starvation)이 발생할 수 있다.</li>
+<li>락을 소유한 스레드가 반환되지 않고 종료된 경우 데드락(Dead lock)이 발생한다.</li>
+</ol>
+</blockquote>
+<p>액터 모델을 사용하게 되면 동시성 프로그래밍에서 상태 변경을 안전하게 제어하는 방법 중 하나인 락(Lock) 기반의 동기화와 관련한 여러 가지 문제로부터 자유로워질 수 있다.</p>
+<p><img src="https://i.imgur.com/AQ2gcf4.png" alt="img"></p>
+<p>액터 모델은 사진에서 표현된 Mailbox(또는 buffer, channel, queue, etc..)에 요청받은 메세지를 보관하고 이를 읽어 적절한 행위를 수행하며 자신의 상태를 변경한다. 메세지를 통해 수신자와 발신자의 때문에 다른 스레드는 요청 후 대기하지 않고 자신의 작업을 수행할 수 있고, 락을 얻기 위한 경쟁 상태(race condition)를 피할 수 있다.</p>
+<h2 id="코틀린에서의-actor">코틀린에서의 Actor</h2>
+<h3 id="the-problem">The problem</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-kotlin" data-lang="kotlin"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> kotlinx.coroutines.*
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> kotlin.system.*    
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">suspend</span> <span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">massiveRun</span>(action: <span style="color:#66d9ef">suspend</span> () <span style="color:#f92672">-&gt;</span> Unit) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">val</span> n = <span style="color:#ae81ff">100</span>  <span style="color:#75715e">// number of coroutines to launch
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">val</span> k = <span style="color:#ae81ff">1000</span> <span style="color:#75715e">// times an action is repeated by each coroutine
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">val</span> time = measureTimeMillis {
+</span></span><span style="display:flex;"><span>        coroutineScope { <span style="color:#75715e">// scope for coroutines 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            repeat(n) {
+</span></span><span style="display:flex;"><span>                launch {
+</span></span><span style="display:flex;"><span>                    repeat(k) { action() }
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    println(<span style="color:#e6db74">&#34;Completed </span><span style="color:#e6db74">${n * k}</span><span style="color:#e6db74"> actions in </span><span style="color:#e6db74">$time</span><span style="color:#e6db74"> ms&#34;</span>)    
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">var</span> counter = <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">main</span>() = runBlocking {
+</span></span><span style="display:flex;"><span>    withContext(Dispatchers.Default) {
+</span></span><span style="display:flex;"><span>        massiveRun {
+</span></span><span style="display:flex;"><span>            counter<span style="color:#f92672">++</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    println(<span style="color:#e6db74">&#34;Counter = </span><span style="color:#e6db74">$counter</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>동시성 프로그래밍에서 공유 상태의 안전한 연산을 하기란 쉬운 일이 아니다. 위 코드의 경우 100개의 코루틴이 각각 1000번 연산한 결과는 실행마다 결과가 달라진다.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-kotlin" data-lang="kotlin"><span style="display:flex;"><span><span style="color:#a6e22e">@Volatile</span> <span style="color:#75715e">// in Kotlin `volatile` is an annotation 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">var</span> counter = <span style="color:#ae81ff">0</span>
+</span></span></code></pre></div><p>이를 해결하고자 <code>@Volatile</code> 어노테이션을 추가해도 원자성이 보장되지 않기 때문에 문제를 해결되지 않는다.</p>
+<h3 id="actors">Actors</h3>
+<p>코틀린에서는 동시성 프로그래밍을 쉽게 개발하기 위해 다양한 언어적 장치를 제공한다. 그 중 하나가 액터 모델을 사용할 수 있도록 도와주는 <code>actor</code> 키워드로 아래와 같이 사용될 수 있다.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-kotlin" data-lang="kotlin"><span style="display:flex;"><span><span style="color:#66d9ef">import</span> kotlinx.coroutines.*
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> kotlinx.coroutines.channels.*
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">import</span> kotlin.system.*
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">suspend</span> <span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">massiveRun</span>(action: <span style="color:#66d9ef">suspend</span> () <span style="color:#f92672">-&gt;</span> Unit) {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">val</span> n = <span style="color:#ae81ff">100</span>  <span style="color:#75715e">// number of coroutines to launch
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">val</span> k = <span style="color:#ae81ff">1000</span> <span style="color:#75715e">// times an action is repeated by each coroutine
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">val</span> time = measureTimeMillis {
+</span></span><span style="display:flex;"><span>        coroutineScope { <span style="color:#75715e">// scope for coroutines 
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            repeat(n) {
+</span></span><span style="display:flex;"><span>                launch {
+</span></span><span style="display:flex;"><span>                    repeat(k) { action() }
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    println(<span style="color:#e6db74">&#34;Completed </span><span style="color:#e6db74">${n * k}</span><span style="color:#e6db74"> actions in </span><span style="color:#e6db74">$time</span><span style="color:#e6db74"> ms&#34;</span>)    
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Message types for counterActor
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">sealed</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CounterMsg</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">object</span> <span style="color:#a6e22e">IncCounter</span> : CounterMsg() <span style="color:#75715e">// one-way message to increment counter
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">GetCounter</span>(<span style="color:#66d9ef">val</span> response: CompletableDeferred&lt;Int&gt;) : CounterMsg() <span style="color:#75715e">// a request with reply
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// This function launches a new counter actor
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">CoroutineScope</span>.counterActor() = actor&lt;CounterMsg&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">var</span> counter = <span style="color:#ae81ff">0</span> <span style="color:#75715e">// actor state
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> (msg <span style="color:#66d9ef">in</span> channel) { <span style="color:#75715e">// iterate over incoming messages
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">when</span> (msg) {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">is</span> IncCounter <span style="color:#f92672">-&gt;</span> counter<span style="color:#f92672">++</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">is</span> GetCounter <span style="color:#f92672">-&gt;</span> msg.response.complete(counter)
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">fun</span> <span style="color:#a6e22e">main</span>() = runBlocking&lt;Unit&gt; {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">val</span> counter = counterActor() <span style="color:#75715e">// create the actor
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    withContext(Dispatchers.Default) {
+</span></span><span style="display:flex;"><span>        massiveRun {
+</span></span><span style="display:flex;"><span>            counter.send(IncCounter)
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// send a message to get a counter value from an actor
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">val</span> response = CompletableDeferred&lt;Int&gt;()
+</span></span><span style="display:flex;"><span>    counter.send(GetCounter(response))
+</span></span><span style="display:flex;"><span>    println(<span style="color:#e6db74">&#34;Counter = </span><span style="color:#e6db74">${response.await()}</span><span style="color:#e6db74">&#34;</span>)
+</span></span><span style="display:flex;"><span>    counter.close() <span style="color:#75715e">// shutdown the actor
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>}
+</span></span></code></pre></div><p>액터는 메세지를 받을 수 있는 채널을 통해 요청을 기다리고, 요청의 종류에 따라 자신의 상태를 변경한다. 위 코드를 보면 액터는 자신의 상태(counter)의 상태를 변경하기 전 어떠한 임계 영역을 만들지도 않고 일반적인 단일 스레드 형식의 코드를 작성할 수 있다.</p>
+
+    <h4><a href="https://yohanio.github.io">Back to Home</a></h4>
+</div>
+
+
+        </div><footer class="container">
+    <hr class="soften">
+    <p>
+
+    <a href="https://gitlab.com/maxlefou/hugo.386">hugo.386 theme by Max le Fou</a> | 
+
+&copy; 
+<a href="https://github.com/yohanio" target="_blank">
+    yohanio
+</a>
+<span id="thisyear">2020</span>
+
+    | yohan&rsquo;s notepad
+
+
+        | Built on <a href="//gohugo.io" target="_blank">Hugo</a>
+</p>
+    <p class="text-center">
+        
+        
+        
+        <a href="https://github.com/yohanio">GitHub</a> 
+        
+    </p>
+</footer>
+
+</body><link rel="stylesheet" href="/css/bootstrap.css">
+<link rel="stylesheet" href="/css/bootstrap-responsive.css">
+<link rel="stylesheet" href="/css/style.css">
+
+<script src="/js/jquery.js"></script>
+<script src="/js/bootstrap-386.js"></script>
+<script src="/js/bootstrap-transition.js"></script>
+<script src="/js/bootstrap-alert.js"></script>
+<script src="/js/bootstrap-modal.js"></script>
+<script src="/js/bootstrap-dropdown.js"></script>
+<script src="/js/bootstrap-scrollspy.js"></script>
+<script src="/js/bootstrap-tab.js"></script>
+<script src="/js/bootstrap-tooltip.js"></script>
+<script src="/js/bootstrap-popover.js"></script>
+<script src="/js/bootstrap-button.js"></script>
+<script src="/js/bootstrap-collapse.js"></script>
+<script src="/js/bootstrap-carousel.js"></script>
+<script src="/js/bootstrap-typeahead.js"></script>
+<script src="/js/bootstrap-affix.js"></script>
+<script>
+    _386 = { 
+        fastLoad: false ,
+        onePass: false , 
+        speedFactor: 2 
+    };
+
+    
+    function ThisYear() {
+        document.getElementById('thisyear').innerHTML = new Date().getFullYear();
+    };
+</script></html>
